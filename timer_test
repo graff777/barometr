@@ -1,0 +1,45 @@
+#include "stm8s.h"
+#include "stm8s_gpio.h"
+#include "stm8s_clk.h"
+#include "stm8s_tim1.h"
+#include "main.h"
+#define LED GPIO_PIN_5
+#define SHINA_B GPIOB
+
+
+@far @interrupt void tim1UpdateInterrupt(void)
+{
+TIM1_ClearITPendingBit(TIM1_IT_UPDATE);
+GPIO_WriteReverse(GPIOB, GPIO_PIN_5);
+}
+
+@far @interrupt void tim1UpdateInterrupt777(void)
+{
+TIM1_ClearITPendingBit(TIM1_IT_UPDATE);
+GPIO_WriteReverse(GPIOC, GPIO_PIN_7);
+}
+void TIM1_Init(int period_tim)
+{
+TIM1_TimeBaseInit(16000, TIM1_COUNTERMODE_UP, period_tim, 0);
+TIM1_ITConfig(TIM1_IT_UPDATE, ENABLE);
+TIM1_Cmd(ENABLE);	
+}
+
+main()
+{
+	  // ----------- GPIO CONFIG -------------------
+GPIO_DeInit(SHINA_B);
+GPIO_DeInit(GPIOC);
+GPIO_Init(SHINA_B, LED, GPIO_MODE_OUT_PP_LOW_FAST);
+GPIO_Init(GPIOC, GPIO_PIN_7, GPIO_MODE_OUT_PP_LOW_FAST);
+TIM1_Init(100);
+enableInterrupts();
+while(1);
+}
+
+
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t* file, uint32_t line){
+while (1);
+}
+#endif
