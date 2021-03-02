@@ -1,0 +1,65 @@
+#include "stm8s.h"
+#include "stm8s_gpio.h"
+#include "stm8s_clk.h"
+#include "stm8s_adc1.h"
+#include "stm8s_tim4.h"
+#include "stm8s_uart1.h"
+//#include "stdio.h"
+#include "main.h"
+#define TIM4_PERIOD       124
+#define LED GPIO_PIN_5
+#define SHINA_B GPIOB
+volatile uint16_t count;
+volatile uint16_t adc2;
+ErrorStatus status = FALSE;
+
+@far @interrupt void tim1UpdateInterrupt(void)
+{
+TIM1_ClearITPendingBit(TIM1_IT_UPDATE);
+GPIO_WriteReverse(GPIOB, GPIO_PIN_5);	
+}
+
+
+INTERRUPT_HANDLER(IRQ_Handler_TIM4, 23)
+{
+    if (count)
+        count--;
+
+    TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
+}
+
+INTERRUPT_HANDLER(IRQ_Handled_ADC1, 22)
+{
+    adc2=ADC1_GetConversionValue();
+
+    ADC1_ClearITPendingBit(ADC1_IT_EOC);
+}
+
+void delay_ms(uint16_t ms)
+{
+    TIM4_Cmd(DISABLE);       // stop
+    TIM4_TimeBaseInit(TIM4_PRESCALER_128, TIM4_PERIOD);
+    TIM4_ClearFlag(TIM4_FLAG_UPDATE);
+    TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);
+    count = ms;
+    TIM4_Cmd(ENABLE);       // let's go
+    while(count);
+}
+
+main()
+{
+GPIO_DeInit(SHINA_B);
+GPIO_DeInit(GPIOC);
+GPIO_Init(SHINA_B, LED, GPIO_MODE_OUT_PP_LOW_FAST);
+GPIO_Init(GPIOC, GPIO_PIN_7, GPIO_MODE_OUT_PP_LOW_FAST);;
+enableInterrupts();
+while(1);	
+}
+
+ 
+ 
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t* file, uint32_t line){
+while (1);
+}
+#endif
