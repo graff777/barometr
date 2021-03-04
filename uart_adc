@@ -1,0 +1,49 @@
+#include "stm8s.h"
+#include "stm8s_gpio.h"
+#include "stm8s_clk.h"
+#include "stdio.h"
+#include "stm8s103_adc.h"
+  
+void delay_ms(uint32_t time)
+{
+	while(--time);
+}
+main()
+{   
+    unsigned int pt1000=0;
+		float voltage, tempb;
+		char temp;
+		
+		//Serial_begin(9600);
+		UART1_DeInit();
+		UART1_Init((uint32_t)9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO,
+              UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TXRX_ENABLE);
+		CLK_DeInit();
+		CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, ENABLE);
+    //GPIO_DeInit(GPIOB);
+		GPIO_DeInit(GPIOD);
+		GPIO_DeInit(GPIOC);
+		GPIO_Init(GPIOC, GPIO_PIN_4, GPIO_MODE_IN_FL_IT);
+	  //GPIO_Init(GPIOB, GPIO_PIN_5, GPIO_MODE_OUT_PP_HIGH_FAST);
+
+		while(1)
+{  
+		pt1000=ADC_Read(AIN2);
+		voltage=pt1000*3.3/1024.0;
+		tempb=(1000*voltage)/(3.3-voltage);
+		temp=(tempb-1000)/4.05;
+		printf(bit);
+		delay_ms(50000);
+}
+
+}
+ 
+ 
+
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t* file, uint32_t line)
+{
+while (1);
+}
+#endif
+ 
